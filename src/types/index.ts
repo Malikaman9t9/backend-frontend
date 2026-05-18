@@ -70,6 +70,12 @@ export interface TrafficData {
   search_traffic: string;
   direct_traffic: string;
   social_traffic: string;
+  referral_traffic: string;
+  email_traffic: string;
+  monthly_visits_list: { month: string; visits: number }[];
+  top_countries: { country: string; visits: number; share: string }[];
+  top_referrals: { source: string; visits: number }[];
+  top_keywords: { keyword: string; visits: number; position: number }[];
   raw_data: Record<string, unknown>;
 }
 

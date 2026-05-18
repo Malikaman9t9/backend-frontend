@@ -12,15 +12,41 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 export { SUPABASE_URL, SUPABASE_ANON_KEY };
 
 async function fetchJSON<T>(url: string, body: Record<string, unknown>): Promise<T> {
-  console.log("fetchJSON called:", url, body);
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  console.log("Response status:", res.status);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
+}
+
+export async function fetchHTMLPreview(
+  url: string,
+  onpage_data: OnPageData,
+  speed_data: SpeedData | null,
+  traffic_data: TrafficData | null,
+  ai_suggestions: any[],
+  agency_name: string,
+  client_name: string,
+  author_name: string
+): Promise<string> {
+  const res = await fetch(`${API_BASE}/export/html/preview`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url,
+      onpage_data,
+      speed_data: speed_data || {},
+      traffic_data: traffic_data || {},
+      ai_suggestions,
+      agency_name,
+      client_name,
+      author_name,
+    }),
+  });
+  if (!res.ok) throw new Error(`Preview error: ${res.status}`);
+  return await res.text();
 }
 
 export async function fetchOnPage(url: string): Promise<OnPageData | null> {

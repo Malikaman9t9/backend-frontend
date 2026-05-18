@@ -1,6 +1,6 @@
 import type { TrafficData } from "../types";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Globe, Users, Clock, Activity, ArrowUpRight, Search, Share2, MousePointer } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
+import { Globe, Users, Clock, Activity, ArrowUpRight, Search, Share2, MousePointer, TrendingUp, MapPin } from "lucide-react";
 
 interface Props {
   data: TrafficData;
@@ -23,23 +23,21 @@ const SOURCE_COLORS = ["#6D28D9", "#DB2777", "#F59E0B", "#10B981", "#3B82F6"];
 
 export default function TrafficTab({ data }: Props) {
   const raw: Record<string, unknown> = data.raw_data || {};
-  const traffic = (raw.Traffic as Record<string, unknown>) || {};
-  const sources = (traffic.Sources as Record<string, unknown>) || {};
-
+  
+  const monthlyList = data.monthly_visits_list || [];
+  const trendData = monthlyList.length > 0 
+    ? monthlyList 
+    : [];
+    
   const sourceData = [
-    { name: "Search", value: sources.Search ? parseFloat(String(sources.Search)) * 100 : 0 },
-    { name: "Direct", value: sources.Direct ? parseFloat(String(sources.Direct)) * 100 : 0 },
-    { name: "Social", value: sources.Social ? parseFloat(String(sources.Social)) * 100 : 0 },
+    { name: "Organic Search", value: data.search_traffic !== "N/A" ? parseFloat(data.search_traffic.replace('%', '')) : 0 },
+    { name: "Direct", value: data.direct_traffic !== "N/A" ? parseFloat(data.direct_traffic.replace('%', '')) : 0 },
+    { name: "Social", value: data.social_traffic !== "N/A" ? parseFloat(data.social_traffic.replace('%', '')) : 0 },
+    { name: "Referral", value: data.referral_traffic !== "N/A" ? parseFloat(data.referral_traffic.replace('%', '')) : 0 },
   ].filter((s) => s.value > 0);
 
-  const rawVisits = Number(raw.EstimatedMonthlyVisits) || 0;
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-  const trendData = rawVisits > 0
-    ? months.map((m, i) => ({
-        month: m,
-        visits: Math.round(rawVisits * (0.85 + 0.05 * i)),
-      }))
-    : [];
+  const topCountries = data.top_countries || [];
+  const topKeywords = data.top_keywords || [];
 
   return (
     <div className="traffic-tab">
@@ -66,111 +64,154 @@ export default function TrafficTab({ data }: Props) {
         />
         <MetricCard
           icon={<Clock size={20} />}
-          label="Avg. Visit Duration"
+          label="Avg. Duration"
           value={data.avg_duration}
         />
         <MetricCard
-          icon={<ArrowUpRight size={20} />}
-          label="Search Traffic"
+          icon={<Search size={20} />}
+          label="Organic Traffic"
           value={data.search_traffic}
-          sub={data.direct_traffic !== "N/A" ? `Direct: ${data.direct_traffic}` : undefined}
         />
       </div>
 
       <div className="traffic-charts-row">
         <div className="traffic-chart-card">
           <div className="traffic-chart-header">
-            <h5><Search size={16} /> Traffic Sources</h5>
+            <h5><Activity size={16} /> Monthly Visit Trend</h5>
           </div>
           <div className="traffic-chart-body">
-            {sourceData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie
-                    data={sourceData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {sourceData.map((_, i) => (
-                      <Cell key={i} fill={SOURCE_COLORS[i % SOURCE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v) => (typeof v === "number" ? `${v.toFixed(1)}%` : v)} />
-                </PieChart>
+            {trendData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
+                  <Tooltip formatter={(v) => [typeof v === 'number' ? v.toLocaleString() : v, 'Visits']} />
+                  <Line type="monotone" dataKey="visits" stroke="#6D28D9" strokeWidth={3} dot={{ fill: "#6D28D9", r: 4 }} />
+                </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="traffic-empty">No source data available</div>
+              <div className="traffic-empty">
+                <TrendingUp size={32} />
+                <p>Monthly trend data unavailable</p>
+              </div>
             )}
-            <div className="traffic-legend">
-              {sourceData.map((s, i) => (
-                <div key={s.name} className="traffic-legend-item">
-                  <span className="legend-dot" style={{ background: SOURCE_COLORS[i] }} />
-                  <span className="legend-label">{s.name}</span>
-                  <span className="legend-value">{s.value.toFixed(1)}%</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
         <div className="traffic-chart-card">
           <div className="traffic-chart-header">
-            <h5><Activity size={16} /> Monthly Visit Trend</h5>
+            <h5><Search size={16} /> Traffic Sources</h5>
           </div>
           <div className="traffic-chart-body">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Bar dataKey="visits" fill="#6D28D9" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {sourceData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={sourceData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={80}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {sourceData.map((_, i) => (
+                        <Cell key={i} fill={SOURCE_COLORS[i % SOURCE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v) => (typeof v === "number" ? `${v.toFixed(1)}%` : v)} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="traffic-legend">
+                  {sourceData.map((s, i) => (
+                    <div key={s.name} className="traffic-legend-item">
+                      <span className="legend-dot" style={{ background: SOURCE_COLORS[i] }} />
+                      <span className="legend-label">{s.name}</span>
+                      <span className="legend-value">{s.value.toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="traffic-empty">No source data available</div>
+            )}
           </div>
         </div>
       </div>
 
-      {data.status === "Live Data" && (
-        <div className="traffic-insights">
-          <h5><Share2 size={16} /> Traffic Insights</h5>
-          <div className="traffic-insights-grid">
-            <div className="insight-item">
-              <span className="insight-label">Search Traffic</span>
-              <div className="insight-bar-track">
-                <div className="insight-bar-fill" style={{ width: data.search_traffic, background: "#6D28D9" }} />
+      {topCountries.length > 0 && (
+        <div className="traffic-section">
+          <h5><MapPin size={16} /> Top Countries</h5>
+          <div className="countries-grid">
+            {topCountries.map((c, i) => (
+              <div key={i} className="country-item">
+                <span className="country-name">{c.country}</span>
+                <span className="country-visits">{c.visits.toLocaleString()}</span>
+                <span className="country-share">{c.share}</span>
               </div>
-              <span className="insight-value">{data.search_traffic}</span>
-            </div>
-            <div className="insight-item">
-              <span className="insight-label">Direct Traffic</span>
-              <div className="insight-bar-track">
-                <div className="insight-bar-fill" style={{ width: data.direct_traffic, background: "#DB2777" }} />
-              </div>
-              <span className="insight-value">{data.direct_traffic}</span>
-            </div>
-            <div className="insight-item">
-              <span className="insight-label">Social Traffic</span>
-              <div className="insight-bar-track">
-                <div className="insight-bar-fill" style={{ width: data.social_traffic, background: "#F59E0B" }} />
-              </div>
-              <span className="insight-value">{data.social_traffic}</span>
-            </div>
+            ))}
           </div>
         </div>
       )}
 
-      {data.social_traffic !== "N/A" && (
-        <div className="traffic-meta">
-          <span>Social: {data.social_traffic}</span>
-          <span>Global Rank: {data.global_rank}</span>
-          <span>Updated: Live</span>
+      {topKeywords.length > 0 && (
+        <div className="traffic-section">
+          <h5><Search size={16} /> Top Organic Keywords</h5>
+          <table className="keywords-table">
+            <thead>
+              <tr>
+                <th>Keyword</th>
+                <th>Monthly Visits</th>
+                <th>Position</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topKeywords.slice(0, 10).map((kw, i) => (
+                <tr key={i}>
+                  <td>{kw.keyword}</td>
+                  <td>{kw.visits.toLocaleString()}</td>
+                  <td><span className="position-badge">#{kw.position}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
+
+      <div className="traffic-insights">
+        <h5><Share2 size={16} /> Traffic Distribution</h5>
+        <div className="traffic-insights-grid">
+          <div className="insight-item">
+            <span className="insight-label">Search Traffic</span>
+            <div className="insight-bar-track">
+              <div className="insight-bar-fill" style={{ width: data.search_traffic !== "N/A" ? data.search_traffic : "0%", background: "#6D28D9" }} />
+            </div>
+            <span className="insight-value">{data.search_traffic}</span>
+          </div>
+          <div className="insight-item">
+            <span className="insight-label">Direct Traffic</span>
+            <div className="insight-bar-track">
+              <div className="insight-bar-fill" style={{ width: data.direct_traffic !== "N/A" ? data.direct_traffic : "0%", background: "#DB2777" }} />
+            </div>
+            <span className="insight-value">{data.direct_traffic}</span>
+          </div>
+          <div className="insight-item">
+            <span className="insight-label">Social Traffic</span>
+            <div className="insight-bar-track">
+              <div className="insight-bar-fill" style={{ width: data.social_traffic !== "N/A" ? data.social_traffic : "0%", background: "#F59E0B" }} />
+            </div>
+            <span className="insight-value">{data.social_traffic}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="traffic-meta">
+        <span>Social: {data.social_traffic}</span>
+        <span>Global Rank: {data.global_rank}</span>
+        <span>Status: {data.status}</span>
+      </div>
     </div>
   );
 }

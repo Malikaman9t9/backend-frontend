@@ -153,7 +153,7 @@ export default function SiteAuditor() {
               {activeTab === "traffic" && traffic && <TrafficTab data={traffic} />}
               {activeTab === "ai" && <AiStrategy recommendations={aiResult.recommendations} status={aiResult.status} />}
               {activeTab === "export" && (
-                <ExportTab onpage={onpage} speed={speed} domain={domain} />
+                <ExportTab onpage={onpage} speed={speed} traffic={traffic} aiResult={aiResult} domain={domain} />
               )}
             </div>
           </div>
