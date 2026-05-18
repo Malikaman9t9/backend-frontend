@@ -1,0 +1,95 @@
+import type {
+  OnPageData,
+  SpeedData,
+  TrafficData,
+  AIResult,
+} from "../types";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+
+export { SUPABASE_URL, SUPABASE_ANON_KEY };
+
+async function fetchJSON<T>(url: string, body: Record<string, unknown>): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchOnPage(url: string): Promise<OnPageData | null> {
+  try {
+    return await fetchJSON<OnPageData | null>(`${API_BASE}/onpage`, { url });
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchSpeed(url: string): Promise<SpeedData | null> {
+  try {
+    return await fetchJSON<SpeedData>(`${API_BASE}/speed`, { url });
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchTraffic(url: string): Promise<TrafficData> {
+  try {
+    return await fetchJSON<TrafficData>(`${API_BASE}/traffic`, { url });
+  } catch {
+    return {
+      status: "Error",
+      global_rank: "N/A",
+      monthly_visits: "N/A",
+      bounce_rate: "N/A",
+      pages_per_visit: "N/A",
+      avg_duration: "N/A",
+      search_traffic: "N/A",
+      direct_traffic: "N/A",
+      social_traffic: "N/A",
+      raw_data: {},
+    };
+  }
+}
+
+export async function fetchAIRecommendations(
+  onpage_data: OnPageData,
+  mobile_speed: number,
+  desktop_speed: number
+): Promise<AIResult> {
+  try {
+    return await fetchJSON<AIResult>(`${API_BASE}/ai`, {
+      onpage_data: onpage_data as unknown as Record<string, unknown>,
+      mobile_speed,
+      desktop_speed,
+    });
+  } catch {
+    return { status: "error", recommendations: [] };
+  }
+}
+
+export async function fetchExport(
+  url: string,
+  onpage_data: OnPageData,
+  speed_data: SpeedData,
+  ai_suggestions: Record<string, unknown>[],
+  agency_name: string,
+  client_name: string,
+  author_name: string
+): Promise<Blob | null> {
+  try {
+    const res = await fetch(`${API_BASE}/export`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, onpage_data, speed_data, ai_suggestions, agency_name, client_name, author_name }),
+    });
+    if (!res.ok) throw new Error(`Export error: ${res.status}`);
+    return await res.blob();
+  } catch {
+    return null;
+  }
+}
