@@ -5,26 +5,32 @@ import type {
   AIResult,
 } from "../types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "https://backend-api-lpv3.onrender.com/api";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 export { SUPABASE_URL, SUPABASE_ANON_KEY };
 
 async function fetchJSON<T>(url: string, body: Record<string, unknown>): Promise<T> {
+  console.log("fetchJSON called:", url, body);
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+  console.log("Response status:", res.status);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }
 
 export async function fetchOnPage(url: string): Promise<OnPageData | null> {
   try {
-    return await fetchJSON<OnPageData | null>(`${API_BASE}/onpage`, { url });
-  } catch {
+    console.log("Fetching onpage from:", `${API_BASE}/onpage`, "with url:", url);
+    const result = await fetchJSON<OnPageData | null>(`${API_BASE}/onpage`, { url });
+    console.log("Onpage result:", result);
+    return result;
+  } catch (err) {
+    console.error("Onpage fetch error:", err);
     return null;
   }
 }
