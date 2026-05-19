@@ -29,7 +29,11 @@ export async function fetchHTMLPreview(
   ai_suggestions: any[],
   agency_name: string,
   client_name: string,
-  author_name: string
+  author_name: string,
+  primaryColor?: string,
+  secondaryColor?: string,
+  whiteLabel?: boolean,
+  language?: string,
 ): Promise<string> {
   const res = await fetch(`${API_BASE}/export/html/preview`, {
     method: "POST",
@@ -43,6 +47,10 @@ export async function fetchHTMLPreview(
       agency_name,
       client_name,
       author_name,
+      primary_color: primaryColor || "#6D28D9",
+      secondary_color: secondaryColor || "#DB2777",
+      white_label: whiteLabel || false,
+      language: language || "en",
     }),
   });
   if (!res.ok) throw new Error(`Preview error: ${res.status}`);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { OnPageData, SpeedData, TrafficData, AIResult } from "../types";
 import { fetchExport, fetchHTMLPreview } from "../services/api";
-import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw } from "lucide-react";
+import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw, Globe } from "lucide-react";
 
 interface Props {
   onpage: OnPageData | null;
@@ -11,6 +11,15 @@ interface Props {
   domain: string;
   url?: string;
 }
+
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "ar", label: "العربية" },
+  { code: "zh", label: "中文" },
+];
 
 const SECTIONS = [
   { id: "scores", label: "Performance Scores", enabled: true },
@@ -30,6 +39,7 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
   const [primaryColor, setPrimaryColor] = useState("#6D28D9");
   const [secondaryColor, setSecondaryColor] = useState("#DB2777");
   const [whiteLabel, setWhiteLabel] = useState(false);
+  const [language, setLanguage] = useState("en");
   const [activeTab, setActiveTab] = useState<"preview" | "customize" | "export">("preview");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,7 +50,7 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
     if (onpage && activeTab === "preview") {
       generatePreview();
     }
-  }, [onpage, primaryColor, secondaryColor, agency]);
+  }, [onpage, primaryColor, secondaryColor, agency, language]);
 
   const generatePreview = async () => {
     if (!onpage) return;
@@ -55,6 +65,10 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
         agency,
         client,
         author,
+        primaryColor,
+        secondaryColor,
+        whiteLabel,
+        language,
       );
       setPreviewUrl(html);
     } catch (err) {
@@ -205,6 +219,18 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
                   <input type="text" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} />
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="customize-section">
+            <h5>Language</h5>
+            <div className="customize-field">
+              <label>Report Language</label>
+              <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                {LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.code}>{lang.label}</option>
+                ))}
+              </select>
             </div>
           </div>
 
