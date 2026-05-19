@@ -122,6 +122,7 @@ export async function fetchExport(
   url: string,
   onpage_data: OnPageData,
   speed_data: SpeedData,
+  traffic_data: TrafficData | null,
   ai_suggestions: Record<string, unknown>[],
   agency_name: string,
   client_name: string,
@@ -131,7 +132,7 @@ export async function fetchExport(
     const res = await fetch(`${API_BASE}/export`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, onpage_data, speed_data, ai_suggestions, agency_name, client_name, author_name }),
+      body: JSON.stringify({ url, onpage_data, speed_data, traffic_data: traffic_data || {}, ai_suggestions, agency_name, client_name, author_name }),
     });
     if (!res.ok) throw new Error(`Export error: ${res.status}`);
     return await res.blob();

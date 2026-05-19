@@ -75,6 +75,7 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
         url || `https://${domain}`,
         onpage,
         speed,
+        traffic,
         aiResult?.recommendations.map(r => ({ ...r })) || [],
         agency,
         client,
