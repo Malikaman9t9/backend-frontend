@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { fetchOnPage, fetchSpeed, fetchAIRecommendations } from "../services/api";
+import { fetchOnPage, fetchSpeed, fetchAIRecommendations, fetchBulkExport } from "../services/api";
 import type { BulkResult, AIRecommendation } from "../types";
-import { Lock, Upload, Download, FileSpreadsheet } from "lucide-react";
+import { Lock, Upload, Download, FileSpreadsheet, FileArchive } from "lucide-react";
 
 export default function BulkAnalysis() {
   const { isPro } = useAuth();
@@ -109,6 +109,30 @@ export default function BulkAnalysis() {
     URL.revokeObjectURL(a.href);
   };
 
+  const handleDownloadBulkReport = async () => {
+    if (!results.length) return;
+    
+    const reports = results.map(r => ({
+      url: r.url,
+      onpage_data: r.onpage || {},
+      speed_data: r.speed || {},
+      ai_suggestions: r.ai_recommendations.map(ai => ({ title: ai.title, text: ai.text })),
+      client_name: new URL(r.url).hostname.replace("www.", ""),
+    }));
+    
+    const blob = await fetchBulkExport(reports);
+    if (!blob) {
+      alert("Failed to generate bulk report");
+      return;
+    }
+    
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `bulk_seo_report_${Date.now()}.html`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
   return (
     <div className="bulk-analysis">
       <div className="hero-container">
@@ -152,7 +176,13 @@ export default function BulkAnalysis() {
 
         {done && (
           <div className="bulk-results">
-            <p className="bulk-success">Audited {results.length} URL(s). Download individual reports below.</p>
+            <p className="bulk-success">Audited {results.length} URL(s). Download individual reports below or export all as HTML.</p>
+            <div className="bulk-export-actions">
+              <button className="btn-primary" onClick={handleDownloadBulkReport}>
+                <FileArchive size={18} />
+                Download All as HTML Report
+              </button>
+            </div>
             <hr className="section-divider" />
             {results.map((r, i) => (
               <div key={i} className="bulk-result-item">

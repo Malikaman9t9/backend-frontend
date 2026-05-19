@@ -1381,6 +1381,36 @@ details.seo-tip p {
   flex-wrap: wrap;
 }
 
+.bulk-export-actions {
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--purple);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bulk-export-actions .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: white;
+  color: var(--purple);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bulk-export-actions .btn-primary:hover {
+  background: var(--slate-50);
+  transform: translateY(-1px);
+}
+
 .bulk-results { margin-top: 24px; }
 
 .bulk-success { color: var(--green); font-weight: 700; font-size: 14px; margin-bottom: 16px; }

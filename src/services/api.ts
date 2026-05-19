@@ -133,3 +133,24 @@ export async function fetchExport(
     return null;
   }
 }
+
+export async function fetchBulkExport(reports: {
+  url: string;
+  onpage_data: OnPageData;
+  speed_data: SpeedData;
+  traffic_data?: TrafficData;
+  ai_suggestions: any[];
+  client_name?: string;
+}[]): Promise<Blob | null> {
+  try {
+    const res = await fetch(`${API_BASE}/export/bulk/html`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reports, agency_name: "NexGenWebLab" }),
+    });
+    if (!res.ok) throw new Error(`Bulk export error: ${res.status}`);
+    return await res.blob();
+  } catch {
+    return null;
+  }
+}
