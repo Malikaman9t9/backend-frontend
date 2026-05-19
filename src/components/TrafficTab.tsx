@@ -32,7 +32,12 @@ export default function TrafficTab({ data }: Props) {
     { name: "Direct", value: data.direct_traffic !== "N/A" ? parseFloat(data.direct_traffic.replace('%', '')) : 0 },
     { name: "Social", value: data.social_traffic !== "N/A" ? parseFloat(data.social_traffic.replace('%', '')) : 0 },
     { name: "Referral", value: data.referral_traffic !== "N/A" ? parseFloat(data.referral_traffic.replace('%', '')) : 0 },
-  ].filter((s) => s.value > 0);
+  ];
+
+  const totalSourceValue = sourceData.reduce((sum, s) => sum + s.value, 0);
+  const displaySourceData = totalSourceValue > 0 
+    ? sourceData.filter(s => s.value > 0)
+    : sourceData.map(s => ({ ...s, value: 25 }));
 
   const topCountries = data.top_countries || [];
   const topKeywords = data.top_keywords || [];
@@ -102,12 +107,12 @@ export default function TrafficTab({ data }: Props) {
             <h5><Search size={16} /> Traffic Sources</h5>
           </div>
           <div className="traffic-chart-body">
-            {sourceData.length > 0 ? (
+            {displaySourceData.length > 0 ? (
               <>
                 <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
                     <Pie
-                      data={sourceData}
+                      data={displaySourceData}
                       cx="50%"
                       cy="50%"
                       innerRadius={45}
@@ -115,7 +120,7 @@ export default function TrafficTab({ data }: Props) {
                       dataKey="value"
                       stroke="none"
                     >
-                      {sourceData.map((_, i) => (
+                      {displaySourceData.map((_, i) => (
                         <Cell key={i} fill={SOURCE_COLORS[i % SOURCE_COLORS.length]} />
                       ))}
                     </Pie>
@@ -123,7 +128,7 @@ export default function TrafficTab({ data }: Props) {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="traffic-legend">
-                  {sourceData.map((s, i) => (
+                  {displaySourceData.map((s, i) => (
                     <div key={s.name} className="traffic-legend-item">
                       <span className="legend-dot" style={{ background: SOURCE_COLORS[i] }} />
                       <span className="legend-label">{s.name}</span>
