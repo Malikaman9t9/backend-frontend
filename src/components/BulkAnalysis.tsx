@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { fetchOnPage, fetchSpeed, fetchAIRecommendations, fetchBulkExport } from "../services/api";
-import type { BulkResult, AIRecommendation } from "../types";
+import type { BulkResult, AIRecommendation, OnPageData, SpeedData } from "../types";
 import { Lock, Upload, Download, FileSpreadsheet, FileArchive } from "lucide-react";
 
 export default function BulkAnalysis() {
@@ -114,8 +114,8 @@ export default function BulkAnalysis() {
     
     const reports = results.map(r => ({
       url: r.url,
-      onpage_data: r.onpage || {},
-      speed_data: r.speed || {},
+      onpage_data: r.onpage || {} as OnPageData,
+      speed_data: r.speed || {} as SpeedData,
       ai_suggestions: r.ai_recommendations.map(ai => ({ title: ai.title, text: ai.text })),
       client_name: new URL(r.url).hostname.replace("www.", ""),
     }));

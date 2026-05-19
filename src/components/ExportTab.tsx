@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { OnPageData, SpeedData, TrafficData, AIResult } from "../types";
 import { fetchExport, fetchHTMLPreview } from "../services/api";
-import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw, Globe } from "lucide-react";
+import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw } from "lucide-react";
 
 interface Props {
   onpage: OnPageData | null;
@@ -19,16 +19,6 @@ const LANGUAGES = [
   { code: "de", label: "Deutsch" },
   { code: "ar", label: "العربية" },
   { code: "zh", label: "中文" },
-];
-
-const SECTIONS = [
-  { id: "scores", label: "Performance Scores", enabled: true },
-  { id: "metrics", label: "Key Metrics", enabled: true },
-  { id: "onpage", label: "On-Page SEO", enabled: true },
-  { id: "speed", label: "Core Web Vitals", enabled: true },
-  { id: "traffic", label: "Traffic Analysis", enabled: true },
-  { id: "ai", label: "AI Recommendations", enabled: true },
-  { id: "keywords", label: "Top Keywords", enabled: true },
 ];
 
 export default function ExportTab({ onpage, speed, traffic, aiResult, domain, url }: Props) {
@@ -85,7 +75,7 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
         url || `https://${domain}`,
         onpage,
         speed,
-        aiResult?.recommendations || [],
+        aiResult?.recommendations.map(r => ({ ...r })) || [],
         agency,
         client,
         author,

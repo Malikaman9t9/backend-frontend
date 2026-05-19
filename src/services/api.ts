@@ -91,6 +91,12 @@ export async function fetchTraffic(url: string): Promise<TrafficData> {
       search_traffic: "N/A",
       direct_traffic: "N/A",
       social_traffic: "N/A",
+      referral_traffic: "N/A",
+      email_traffic: "N/A",
+      monthly_visits_list: [],
+      top_referrals: [],
+      top_countries: [],
+      top_keywords: [],
       raw_data: {},
     };
   }

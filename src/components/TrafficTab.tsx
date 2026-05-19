@@ -1,6 +1,6 @@
 import type { TrafficData } from "../types";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
-import { Globe, Users, Clock, Activity, ArrowUpRight, Search, Share2, MousePointer, TrendingUp, MapPin } from "lucide-react";
+import { XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
+import { Globe, Users, Clock, Activity, Search, Share2, MousePointer, TrendingUp, MapPin } from "lucide-react";
 
 interface Props {
   data: TrafficData;
@@ -22,8 +22,6 @@ function MetricCard({ icon, label, value, sub }: { icon: React.ReactNode; label:
 const SOURCE_COLORS = ["#6D28D9", "#DB2777", "#F59E0B", "#10B981", "#3B82F6"];
 
 export default function TrafficTab({ data }: Props) {
-  const raw: Record<string, unknown> = data.raw_data || {};
-  
   const monthlyList = data.monthly_visits_list || [];
   const trendData = monthlyList.length > 0 
     ? monthlyList 
