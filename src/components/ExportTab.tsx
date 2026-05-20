@@ -99,9 +99,11 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
       URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       console.error("Download error:", err);
-      alert("Error downloading report. Please check console for details.");
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      alert(`Error downloading report: ${errorMessage}. Please check console for details.`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleDownloadHTML = () => {
@@ -247,25 +249,25 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
       {activeTab === "export" && (
         <div className="export-panel">
           <div className="export-options">
-            <div className="export-card" onClick={handleDownloadDOCX} style={{ opacity: !onpage ? 0.5 : 1, pointerEvents: !onpage ? "none" : "auto" }}>
+            <div className="export-card" style={{ opacity: !onpage ? 0.5 : 1, pointerEvents: !onpage ? "none" : "auto" }}>
               <div className="export-card-icon">
                 <FileText size={32} />
               </div>
               <h5>Word Document (DOCX)</h5>
               <p>Download as editable .docx file for Microsoft Word</p>
-              <button className="export-btn" disabled={!onpage || loading} onClick={handleDownloadDOCX}>
+              <button className="export-btn" disabled={!onpage || loading} onClick={(e) => { e.stopPropagation(); handleDownloadDOCX(); }}>
                 {loading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                 Download DOCX
               </button>
             </div>
 
-            <div className="export-card" onClick={handleDownloadHTML} style={{ opacity: !onpage ? 0.5 : 1, pointerEvents: !onpage ? "none" : "auto" }}>
+            <div className="export-card" style={{ opacity: !onpage ? 0.5 : 1, pointerEvents: !onpage ? "none" : "auto" }}>
               <div className="export-card-icon">
                 <FileCode size={32} />
               </div>
               <h5>HTML Report</h5>
               <p>Download as HTML file - can be opened in any browser</p>
-              <button className="export-btn" disabled={!onpage} onClick={handleDownloadHTML}>
+              <button className="export-btn" disabled={!onpage} onClick={(e) => { e.stopPropagation(); handleDownloadHTML(); }}>
                 <Download size={16} />
                 Download HTML
               </button>
