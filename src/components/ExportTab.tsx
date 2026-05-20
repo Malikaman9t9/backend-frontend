@@ -68,29 +68,38 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
   };
 
   const handleDownloadDOCX = async () => {
-    if (!onpage || !speed) return;
+    if (!onpage) {
+      alert("Please run an On-Page SEO audit first to download the report.");
+      return;
+    }
     setLoading(true);
     try {
       const blob = await fetchExport(
         url || `https://${domain}`,
         onpage,
-        speed,
+        speed || { mobile: { performance: 0, accessibility: 0, "best-practices": 0, seo: 0, metrics: { fcp: { value: "N/A", score: 0 }, lcp: { value: "N/A", score: 0 }, tbt: { value: "N/A", score: 0 }, cls: { value: "N/A", score: 0 }, si: { value: "N/A", score: 0 } } }, desktop: { performance: 0, accessibility: 0, "best-practices": 0, seo: 0, metrics: { fcp: { value: "N/A", score: 0 }, lcp: { value: "N/A", score: 0 }, tbt: { value: "N/A", score: 0 }, cls: { value: "N/A", score: 0 }, si: { value: "N/A", score: 0 } } } } as SpeedData,
         traffic,
         aiResult?.recommendations.map(r => ({ ...r })) || [],
         agency,
         client,
         author,
       );
-      if (!blob) return;
+      if (!blob) {
+        alert("Failed to generate report. Please try again.");
+        setLoading(false);
+        return;
+      }
+      const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
+      a.href = downloadUrl;
       a.download = `${client.replace(/\s+/g, "_")}_SEO_Report.docx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(a.href);
+      URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       console.error("Download error:", err);
+      alert("Error downloading report. Please check console for details.");
     }
     setLoading(false);
   };
