@@ -134,9 +134,13 @@ export async function fetchExport(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url, onpage_data, speed_data, traffic_data: traffic_data || {}, ai_suggestions, agency_name, client_name, author_name }),
     });
-    if (!res.ok) throw new Error(`Export error: ${res.status}`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Export failed (${res.status}): ${text}`);
+    }
     return await res.blob();
-  } catch {
+  } catch (err) {
+    console.error("fetchExport error:", err);
     return null;
   }
 }
