@@ -16,13 +16,13 @@ export default function BulkAnalysis() {
 
   if (!isPro) {
     return (
-      <div className="pro-lock-card" style={{ padding: "60px 20px" }}>
+      <div className="pro-lock-card">
         <Lock size={60} />
         <h2>Bulk Engine Locked</h2>
-        <p style={{ fontSize: 18 }}>
+        <p>
           Bulk analysis is exclusive to Enterprise Pro. Audit hundreds of URLs at once.
         </p>
-        <a href="https://nexgenweblab.com/upgrade" target="_blank" rel="noreferrer" className="btn-primary" style={{ padding: "15px 30px", fontSize: 16 }}>
+        <a href="https://nexgenweblab.com/upgrade" className="btn-primary btn-bulk-unlock">
           Unlock Enterprise Pro
         </a>
       </div>

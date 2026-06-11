@@ -7,16 +7,16 @@ interface Props {
 
 function AuditCard({ label, data }: { label: string; data: ReturnType<typeof getAuditStatus> }) {
   const severityMap: Record<string, string> = {
-    danger: "#ef4444",
-    warning: "#f59e0b",
-    success: "#10b981",
-    info: "#3b82f6",
+    danger: "var(--red)",
+    warning: "var(--amber)",
+    success: "var(--green)",
+    info: "var(--blue)",
   };
 
   return (
     <div className={`audit-item ${getSeverityClass(data.severity)}`}>
       <div className="audit-header">
-        <div className="audit-status-dot" style={{ background: severityMap[data.severity] || "#94a3b8" }} />
+        <div className="audit-status-dot" style={{ background: severityMap[data.severity] || "var(--slate-400)" }} />
         <div className="audit-item-content">
           <span className="audit-item-title">{label}</span>
           <span className="audit-item-desc">{data.message}</span>

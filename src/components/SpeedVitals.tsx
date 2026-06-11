@@ -26,7 +26,7 @@ function Gauge({ score, label }: { score: number; label: string }) {
             dataKey="value" stroke="none"
           >
             <Cell fill={color} />
-            <Cell fill="#f1f5f9" />
+            <Cell fill="var(--slate-100)" />
           </Pie>
         </PieChart>
         <div className="gauge-score">{score}</div>
@@ -37,10 +37,10 @@ function Gauge({ score, label }: { score: number; label: string }) {
 }
 
 function MetricRow({ label, value, score }: { label: string; value: string; score: number }) {
-  let color = "#ef4444";
+  let color = "var(--red)";
   let Icon = AlertTriangle;
-  if (score >= 0.9) { color = "#10b981"; Icon = CheckCircle; }
-  else if (score >= 0.5) { color = "#f59e0b"; Icon = Minus; }
+  if (score >= 0.9) { color = "var(--green)"; Icon = CheckCircle; }
+  else if (score >= 0.5) { color = "var(--amber)"; Icon = Minus; }
 
   return (
     <div className="speed-metric-card">

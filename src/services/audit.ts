@@ -187,7 +187,7 @@ export function calculateScores(onpage: OnPageData | null, speed: SpeedData | nu
 
 // Score color matching backend
 export function getScoreColor(score: number): string {
-  if (score < 50) return "#ef4444";
-  if (score < 90) return "#f59e0b";
-  return "#10b981";
+  if (score < 50) return "var(--red)";
+  if (score < 90) return "var(--amber)";
+  return "var(--green)";
 }

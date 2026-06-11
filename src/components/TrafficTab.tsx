@@ -19,7 +19,7 @@ function MetricCard({ icon, label, value, sub }: { icon: React.ReactNode; label:
   );
 }
 
-const SOURCE_COLORS = ["#6D28D9", "#DB2777", "#F59E0B", "#10B981", "#3B82F6"];
+const SOURCE_COLORS = ["var(--purple)", "var(--pink)", "var(--amber)", "var(--green)", "var(--blue)"];
 
 export default function TrafficTab({ data }: Props) {
   const monthlyList = data.monthly_visits_list || [];
@@ -86,11 +86,11 @@ export default function TrafficTab({ data }: Props) {
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--slate-100)" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--slate-400)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "var(--slate-400)" }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
                   <Tooltip formatter={(v) => [typeof v === 'number' ? v.toLocaleString() : v, 'Visits']} />
-                  <Line type="monotone" dataKey="visits" stroke="#6D28D9" strokeWidth={3} dot={{ fill: "#6D28D9", r: 4 }} />
+                  <Line type="monotone" dataKey="visits" stroke="var(--purple)" strokeWidth={3} dot={{ fill: "var(--purple)", r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -189,21 +189,21 @@ export default function TrafficTab({ data }: Props) {
           <div className="insight-item">
             <span className="insight-label">Search Traffic</span>
             <div className="insight-bar-track">
-              <div className="insight-bar-fill" style={{ width: data.search_traffic !== "N/A" ? data.search_traffic : "0%", background: "#6D28D9" }} />
+              <div className="insight-bar-fill" style={{ width: data.search_traffic !== "N/A" ? data.search_traffic : "0%", background: "var(--purple)" }} />
             </div>
             <span className="insight-value">{data.search_traffic}</span>
           </div>
           <div className="insight-item">
             <span className="insight-label">Direct Traffic</span>
             <div className="insight-bar-track">
-              <div className="insight-bar-fill" style={{ width: data.direct_traffic !== "N/A" ? data.direct_traffic : "0%", background: "#DB2777" }} />
+              <div className="insight-bar-fill" style={{ width: data.direct_traffic !== "N/A" ? data.direct_traffic : "0%", background: "var(--pink)" }} />
             </div>
             <span className="insight-value">{data.direct_traffic}</span>
           </div>
           <div className="insight-item">
             <span className="insight-label">Social Traffic</span>
             <div className="insight-bar-track">
-              <div className="insight-bar-fill" style={{ width: data.social_traffic !== "N/A" ? data.social_traffic : "0%", background: "#F59E0B" }} />
+              <div className="insight-bar-fill" style={{ width: data.social_traffic !== "N/A" ? data.social_traffic : "0%", background: "var(--amber)" }} />
             </div>
             <span className="insight-value">{data.social_traffic}</span>
           </div>

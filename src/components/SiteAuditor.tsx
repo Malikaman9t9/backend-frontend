@@ -6,11 +6,37 @@ import SpeedVitals from "./SpeedVitals";
 import TrafficTab from "./TrafficTab";
 import AiStrategy from "./AiStrategy";
 import ExportTab from "./ExportTab";
+import UpgradeModal from "./UpgradeModal";
 import { useAuth } from "../context/AuthContext";
 import { fetchOnPage, fetchSpeed, fetchTraffic, fetchAIRecommendations } from "../services/api";
 import { calculateScores } from "../services/audit";
 import type { OnPageData, SpeedData, TrafficData, AIResult } from "../types";
 import { Globe, Zap, TrendingUp, Cpu, FileText } from "lucide-react";
+
+const DAILY_LIMIT_FREE = 3;
+const DAILY_LIMIT_KEY = "ngwl_audit_count";
+
+function getDailyAudits(): number {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const raw = localStorage.getItem(DAILY_LIMIT_KEY);
+    if (!raw) return 0;
+    const { date, count } = JSON.parse(raw);
+    return date === today ? count : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function incrementDailyAudits(): void {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const count = getDailyAudits() + 1;
+    localStorage.setItem(DAILY_LIMIT_KEY, JSON.stringify({ date: today, count }));
+  } catch {
+    // localStorage may be full or unavailable
+  }
+}
 
 function validateURL(input: string): { target: string; clean: string; error: string | null } {
   try {
@@ -45,8 +71,17 @@ export default function SiteAuditor() {
   const [traffic, setTraffic] = useState<TrafficData | null>(null);
   const [aiResult, setAiResult] = useState<AIResult>({ status: "", recommendations: [] });
   const [activeTab, setActiveTab] = useState<TabId>("onpage");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const handleSubmit = async (rawUrl: string) => {
+    if (!isPro) {
+      const used = getDailyAudits();
+      if (used >= DAILY_LIMIT_FREE) {
+        setShowUpgrade(true);
+        return;
+      }
+    }
+
     const { target, clean, error: valErr } = validateURL(rawUrl);
     if (valErr) { setError(valErr); return; }
 
@@ -92,6 +127,8 @@ export default function SiteAuditor() {
 
     setProgress(100); setProgressText("Audit complete.");
     setLoading(false);
+
+    if (!isPro) incrementDailyAudits();
   };
 
   const scores = calculateScores(onpage, speed);
@@ -109,6 +146,13 @@ export default function SiteAuditor() {
 
   return (
     <div className="site-auditor">
+      {!isPro && (
+        <div className="audit-limit-bar">
+          <span>Free audits today: {getDailyAudits()}/{DAILY_LIMIT_FREE}</span>
+          <a href="https://nexgenweblab.com/upgrade">Upgrade for unlimited</a>
+        </div>
+      )}
+
       <div className="hero-container">
         <h1 className="hero-title">Professional <span>SEO Auditor</span></h1>
         <p className="hero-subtitle">
@@ -159,6 +203,8 @@ export default function SiteAuditor() {
           </div>
         </>
       )}
+
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} feature="unlimited audits" />
     </div>
   );
 }

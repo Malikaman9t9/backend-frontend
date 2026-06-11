@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "../context/AuthContext";
+import UpgradeModal from "./UpgradeModal";
 import type { OnPageData, SpeedData, TrafficData, AIResult } from "../types";
 import { fetchExport, fetchHTMLPreview } from "../services/api";
-import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw } from "lucide-react";
+import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw, Lock } from "lucide-react";
 
 interface Props {
   onpage: OnPageData | null;
@@ -22,6 +24,7 @@ const LANGUAGES = [
 ];
 
 export default function ExportTab({ onpage, speed, traffic, aiResult, domain, url }: Props) {
+  const { isPro } = useAuth();
   const [agency, setAgency] = useState("NexGenWebLab");
   const [author, setAuthor] = useState("SEO Team");
   const [client, setClient] = useState(domain || "Client");
@@ -34,6 +37,8 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -68,8 +73,12 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
   };
 
   const handleDownloadDOCX = async () => {
+    if (!isPro) {
+      setShowUpgrade(true);
+      return;
+    }
     if (!onpage) {
-      alert("Please run an On-Page SEO audit first to download the report.");
+      setErrorMessage("Please run an On-Page SEO audit first to download the report.");
       return;
     }
     setLoading(true);
@@ -85,7 +94,7 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
         author,
       );
       if (!blob) {
-        alert("Failed to generate report. Please try again.");
+        setErrorMessage("Failed to generate report. Please try again.");
         setLoading(false);
         return;
       }
@@ -99,14 +108,18 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
       URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       console.error("Download error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-      alert(`Error downloading report: ${errorMessage}. Please check console for details.`);
+      const downloadErrMsg = err instanceof Error ? err.message : "Unknown error occurred";
+      setErrorMessage(`Error downloading report: ${downloadErrMsg}.`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownloadHTML = () => {
+    if (!isPro) {
+      setShowUpgrade(true);
+      return;
+    }
     if (!previewUrl) return;
     const a = document.createElement("a");
     a.href = previewUrl;
@@ -120,6 +133,17 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
     if (!iframeRef.current?.contentWindow) return;
     iframeRef.current.contentWindow?.print();
   };
+
+  const FreeOverlay = () => (
+    <div className="export-free-overlay">
+      <Lock size={32} />
+      <h3>Export Locked</h3>
+      <p>DOCX and HTML exports are available on the Pro plan.</p>
+      <button className="btn-primary" onClick={() => setShowUpgrade(true)}>
+        Upgrade to Pro
+      </button>
+    </div>
+  );
 
   return (
     <div className="export-container">
@@ -135,13 +159,20 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
         </button>
       </div>
 
+      {errorMessage && (
+        <div className="error-banner" style={{ margin: "12px 16px 0" }}>
+          <span>{errorMessage}</span>
+          <button onClick={() => setErrorMessage(null)} style={{ marginLeft: 12, fontWeight: 700, background: "none", border: "none", color: "inherit", cursor: "pointer" }}>✕</button>
+        </div>
+      )}
+
       {activeTab === "preview" && (
         <div className="preview-panel">
           <div className="preview-toolbar">
             <span className="preview-label">
               {previewLoading ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" /> Generating preview...
+                  <Loader2 size={14} className="spin" /> Generating preview...
                 </>
               ) : (
                 <>
@@ -159,9 +190,10 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
             </div>
           </div>
           <div className="preview-frame-container">
+            {!isPro && <FreeOverlay />}
             {previewLoading && (
               <div className="preview-loading">
-                <Loader2 size={32} className="animate-spin" />
+                <Loader2 size={32} className="spin" />
                 <p>Generating your report...</p>
               </div>
             )}
@@ -256,8 +288,8 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
               <h5>Word Document (DOCX)</h5>
               <p>Download as editable .docx file for Microsoft Word</p>
               <button className="export-btn" disabled={!onpage || loading} onClick={(e) => { e.stopPropagation(); handleDownloadDOCX(); }}>
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                Download DOCX
+                {loading ? <Loader2 size={16} className="spin" /> : <Download size={16} />}
+                {isPro ? "Download DOCX" : "Pro Feature"}
               </button>
             </div>
 
@@ -269,7 +301,7 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
               <p>Download as HTML file - can be opened in any browser</p>
               <button className="export-btn" disabled={!onpage} onClick={(e) => { e.stopPropagation(); handleDownloadHTML(); }}>
                 <Download size={16} />
-                Download HTML
+                {isPro ? "Download HTML" : "Pro Feature"}
               </button>
             </div>
           </div>
@@ -290,6 +322,8 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
           </div>
         </div>
       )}
+
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} feature="report exports" />
     </div>
   );
 }

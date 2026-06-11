@@ -118,11 +118,16 @@ export interface AuditScores {
 // ============================================================
 // USER (mirrors backend app.py user & plan)
 // ============================================================
+export type UserTier = "free" | "pro";
+
+export interface UserMetadata {
+  tier: UserTier;
+}
+
 export interface AppUser {
   email: string;
-  user_metadata: {
-    plan: "free" | "pro";
-  };
+  user_metadata: UserMetadata;
+  is_demo?: boolean;
 }
 
 // ============================================================

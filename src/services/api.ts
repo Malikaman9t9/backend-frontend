@@ -5,7 +5,7 @@ import type {
   AIResult,
 } from "../types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://backend-api-lpv3.onrender.com/api";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 

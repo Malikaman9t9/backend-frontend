@@ -2,13 +2,16 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import SiteAuditor from "./SiteAuditor";
 import BulkAnalysis from "./BulkAnalysis";
-import { Search, FileSpreadsheet, LogOut, Bolt, Crown, User, Menu, X } from "lucide-react";
+import DemoBanner from "./DemoBanner";
+import UpgradeModal from "./UpgradeModal";
+import { Search, FileSpreadsheet, LogOut, Bolt, Crown, User, Menu, X, Lock, ArrowLeft } from "lucide-react";
 
 export default function Layout() {
   const { user, isPro, planLabel, signOut, loading } = useAuth();
   const [menu, setMenu] = useState<"auditor" | "bulk">("auditor");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [auditKey, setAuditKey] = useState(0);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   if (loading) {
     return (
@@ -20,8 +23,19 @@ export default function Layout() {
 
   const closeSidebar = () => setSidebarOpen(false);
 
+  const handleBulkClick = () => {
+    if (!isPro) {
+      setShowUpgrade(true);
+    } else {
+      setMenu("bulk");
+      closeSidebar();
+    }
+  };
+
   return (
     <div className="app-layout">
+      <DemoBanner />
+
       <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
         {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
@@ -45,7 +59,7 @@ export default function Layout() {
         )}
 
         {!isPro && (
-          <a href="https://nexgenweblab.com/upgrade" target="_blank" rel="noreferrer" className="upgrade-banner">
+          <a href="https://nexgenweblab.com/upgrade" className="upgrade-banner">
             <Bolt size={14} />
             Upgrade to Pro
           </a>
@@ -68,10 +82,11 @@ export default function Layout() {
           </button>
           <button
             className={`nav-item ${menu === "bulk" ? "nav-active" : ""}`}
-            onClick={() => { setMenu("bulk"); closeSidebar(); }}
+            onClick={handleBulkClick}
           >
-            <FileSpreadsheet size={18} />
+            {isPro ? <FileSpreadsheet size={18} /> : <Lock size={18} />}
             Bulk Analysis
+            {!isPro && <span className="nav-pro-badge">Pro</span>}
           </button>
         </nav>
 
@@ -80,6 +95,11 @@ export default function Layout() {
         <button className="btn-new-audit" onClick={() => { setMenu("auditor"); setAuditKey((k) => k + 1); closeSidebar(); }}>
           Start New Audit
         </button>
+
+        <a href="https://nexgenweblab.com" className="back-to-site">
+          <ArrowLeft size={14} />
+          Back to nexgenweblab.com
+        </a>
 
         <div className="sidebar-footer">
           <span>NexGenWebLab v2.0</span>
@@ -91,6 +111,8 @@ export default function Layout() {
       <main className="main-content">
         {menu === "auditor" ? <SiteAuditor key={auditKey} /> : <BulkAnalysis />}
       </main>
+
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} feature="Bulk Analysis" />
     </div>
   );
 }
