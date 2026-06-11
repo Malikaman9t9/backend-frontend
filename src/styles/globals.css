@@ -344,14 +344,14 @@ input { font-family: inherit; outline: none; }
 }
 
 .login-brand-panel {
-  flex: 1;
+  flex: 0 0 40%;
   background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 40px;
+  flex-direction: column;
+  padding: 40px;
   position: relative;
   overflow: hidden;
+  min-height: 100vh;
 }
 
 .login-brand-panel::before {
@@ -365,30 +365,38 @@ input { font-family: inherit; outline: none; }
   pointer-events: none;
 }
 
-.login-brand-content {
-  max-width: 440px;
-  color: #fff;
+.login-brand-top {
   position: relative;
   z-index: 1;
+  margin-bottom: auto;
 }
 
-.login-brand-logo {
-  width: 64px;
-  height: 64px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 18px;
+.login-brand-logo-img {
+  height: 28px;
+  filter: brightness(0) invert(1);
+}
+
+.login-brand-center {
+  position: relative;
+  z-index: 1;
+  flex: 1;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  margin-bottom: 32px;
-  backdrop-filter: blur(8px);
+  color: #fff;
+}
+
+.login-brand-bottom {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
 }
 
 .login-brand-title {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 900;
   line-height: 1.2;
-  margin-bottom: 36px;
+  margin-bottom: 12px;
   letter-spacing: -0.02em;
 }
 
@@ -399,22 +407,29 @@ input { font-family: inherit; outline: none; }
   background-clip: text;
 }
 
+.login-brand-tagline {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
 .login-brand-features {
   list-style: none;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 40px;
+  gap: 18px;
 }
 
 .login-brand-features li {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 15px;
+  gap: 12px;
+  font-size: 14px;
   font-weight: 500;
-  opacity: 0.9;
+  color: rgba(255,255,255,0.9);
 }
 
 .login-brand-features li svg {
@@ -456,7 +471,7 @@ input { font-family: inherit; outline: none; }
 }
 
 .login-form-panel {
-  flex: 1;
+  flex: 0 0 60%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -469,57 +484,54 @@ input { font-family: inherit; outline: none; }
   max-width: 420px;
 }
 
-.login-form-logo {
-  margin-bottom: 32px;
+.login-welcome {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--slate-900);
+  margin-bottom: 4px;
 }
 
-.login-form-logo .logo-img {
-  max-width: 180px;
-  height: auto;
-}
-
-.login-mode-tabs {
-  display: flex;
-  position: relative;
-  background: var(--slate-100);
-  border-radius: var(--radius-md);
-  padding: 4px;
+.login-welcome-sub {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--slate-400);
   margin-bottom: 28px;
 }
 
-.mode-tab {
+.login-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--slate-200);
+  margin-bottom: 28px;
+}
+
+.login-tab {
   flex: 1;
-  height: 40px;
+  height: 44px;
   border: none;
   background: transparent;
-  color: var(--slate-500);
+  color: var(--slate-400);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  border-radius: var(--radius-sm);
   position: relative;
-  z-index: 2;
   transition: color 0.2s;
+  padding: 0 16px;
 }
 
-.mode-active {
-  color: var(--slate-900);
-}
+.login-tab:hover { color: var(--slate-600); }
 
-.mode-indicator {
+.login-tab.active { color: var(--purple); }
+
+.login-tab.active::after {
+  content: '';
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  width: calc(50% - 4px);
-  background: #fff;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  z-index: 1;
-  transition: transform 0.25s ease;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--purple);
+  border-radius: 2px 2px 0 0;
 }
-
-.indicator-left { transform: translateX(0); }
-.indicator-right { transform: translateX(calc(100% + 4px)); }
 
 .login-form-body {
   display: flex;
@@ -626,8 +638,12 @@ input { font-family: inherit; outline: none; }
   margin-top: 2px;
 }
 
+.forgot-row {
+  text-align: right;
+  margin-top: -4px;
+}
+
 .forgot-link {
-  align-self: flex-start;
   background: none;
   border: none;
   color: var(--purple);
@@ -991,12 +1007,10 @@ input { font-family: inherit; outline: none; }
    RESPONSIVE — LOGIN SPLIT
    ============================================================ */
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .login-split { flex-direction: column; }
-  .login-brand-panel { padding: 40px 24px; }
-  .login-brand-title { font-size: 28px; }
-  .login-form-panel { padding: 32px 24px; }
   .login-brand-panel { display: none; }
+  .login-form-panel { flex: 1; padding: 32px 24px; }
 }
 
 @media (max-width: 480px) {

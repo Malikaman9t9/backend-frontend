@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return "Authentication is not configured.";
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
+        redirectTo: 'https://tools.nexgenweblab.com/login',
       });
       if (error) return error.message;
       return null;
@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: 'https://tools.nexgenweblab.com/login',
         },
       });
     } catch {

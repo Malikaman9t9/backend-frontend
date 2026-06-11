@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { ShieldHalf, Eye, EyeOff, Loader2, Mail, Lock, ArrowRight, CheckCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 type FormMode = "signin" | "signup";
 
@@ -66,32 +66,30 @@ export default function LoginPage() {
   return (
     <div className="login-split">
       <div className="login-brand-panel">
-        <div className="login-brand-content">
-          <div className="login-brand-logo">
-            <ShieldHalf size={32} />
-          </div>
+        <div className="login-brand-top">
+          <img src="/logo.png" alt="NexGenWebLab" className="login-brand-logo-img" />
+        </div>
+        <div className="login-brand-center">
           <h1 className="login-brand-title">
             Professional SEO<br />
             <span>Audit Platform</span>
           </h1>
           <ul className="login-brand-features">
             <li>
-              <CheckCircle size={18} />
-              Deep technical SEO audits with 117+ checkpoints
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Trusted by 2,400+ SEO professionals
             </li>
             <li>
-              <CheckCircle size={18} />
-              Core Web Vitals &amp; PageSpeed analysis
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Deep audits with 117+ checkpoints
             </li>
             <li>
-              <CheckCircle size={18} />
-              AI-powered strategic recommendations
-            </li>
-            <li>
-              <CheckCircle size={18} />
-              White label reports for your agency
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              AI-powered growth recommendations
             </li>
           </ul>
+        </div>
+        <div className="login-brand-bottom">
           <div className="login-brand-testimonial">
             <div className="testimonial-avatars">
               <div className="tav" style={{ background: "var(--purple)" }}>SK</div>
@@ -105,24 +103,28 @@ export default function LoginPage() {
 
       <div className="login-form-panel">
         <div className="login-form-container">
-          <div className="login-form-logo">
-            <img src="/logo.png" alt="NexGenWebLab" className="logo-img" />
-          </div>
+          <p className="login-welcome">Welcome back</p>
+          <p className="login-welcome-sub">
+            {mode === "signin" ? "Sign in to your account." : "Create your free account."}
+          </p>
 
-          <div className="login-mode-tabs">
+          <div className="login-tabs" role="tablist">
             <button
-              className={`mode-tab ${mode === "signin" ? "mode-active" : ""}`}
+              className={`login-tab ${mode === "signin" ? "active" : ""}`}
+              role="tab"
+              aria-selected={mode === "signin"}
               onClick={() => mode !== "signin" && toggleMode()}
             >
               Sign In
             </button>
             <button
-              className={`mode-tab ${mode === "signup" ? "mode-active" : ""}`}
+              className={`login-tab ${mode === "signup" ? "active" : ""}`}
+              role="tab"
+              aria-selected={mode === "signup"}
               onClick={() => mode !== "signup" && toggleMode()}
             >
               Create Account
             </button>
-            <div className={`mode-indicator ${mode === "signin" ? "indicator-left" : "indicator-right"}`} />
           </div>
 
           <form onSubmit={handleSubmit} className="login-form-body" noValidate>
@@ -163,6 +165,7 @@ export default function LoginPage() {
                   className="input-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
+                  aria-label="Toggle password visibility"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -171,18 +174,20 @@ export default function LoginPage() {
             </div>
 
             {mode === "signin" && (
-              <button
-                type="button"
-                className="forgot-link"
-                onClick={handleForgotPassword}
-                disabled={loading}
-              >
-                Forgot password?
-              </button>
+              <div className="forgot-row">
+                <button
+                  type="button"
+                  className="forgot-link"
+                  onClick={handleForgotPassword}
+                  disabled={loading}
+                >
+                  Forgot password?
+                </button>
+              </div>
             )}
 
             <button type="submit" className="btn-primary btn-full login-cta" disabled={loading}>
-              {loading ? <Loader2 size={20} className="spin" /> : <ArrowRight size={20} />}
+              {loading ? <Loader2 size={20} className="spin" /> : null}
               {loading
                 ? (mode === "signin" ? "Signing in..." : "Creating account...")
                 : (mode === "signin" ? "Sign In" : "Create Free Account")}

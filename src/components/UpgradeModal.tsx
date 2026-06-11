@@ -45,8 +45,6 @@ export default function UpgradeModal({ open, onClose, feature }: Props) {
 
         <a
           href="https://nexgenweblab.com/pricing"
-          target="_blank"
-          rel="noreferrer"
           className="btn-primary btn-full upgrade-cta"
         >
           <ArrowUpRight size={18} />
