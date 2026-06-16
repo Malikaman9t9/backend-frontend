@@ -42,7 +42,6 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [aiParagraphs, setAiParagraphs] = useState<Record<string, string> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const pdfContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (onpage && activeTab === "preview") {
