@@ -3,6 +3,7 @@ import type {
   SpeedData,
   TrafficData,
   AIResult,
+  AIParagraphsResult,
 } from "../types";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
@@ -34,6 +35,7 @@ export async function fetchHTMLPreview(
   secondaryColor?: string,
   whiteLabel?: boolean,
   language?: string,
+  ai_paragraphs?: Record<string, string> | null,
 ): Promise<string> {
   const res = await fetch(`${API_BASE}/export/html/preview`, {
     method: "POST",
@@ -44,6 +46,7 @@ export async function fetchHTMLPreview(
       speed_data: speed_data || {},
       traffic_data: traffic_data || {},
       ai_suggestions,
+      ai_paragraphs: ai_paragraphs || null,
       agency_name,
       client_name,
       author_name,
@@ -55,6 +58,30 @@ export async function fetchHTMLPreview(
   });
   if (!res.ok) throw new Error(`Preview error: ${res.status}`);
   return await res.text();
+}
+
+export async function fetchAIParagraphs(
+  onpage_data: OnPageData,
+  mobile_speed: number,
+  desktop_speed: number
+): Promise<AIParagraphsResult> {
+  try {
+    return await fetchJSON<AIParagraphsResult>(`${API_BASE}/ai/paragraphs`, {
+      onpage_data: onpage_data as unknown as Record<string, unknown>,
+      mobile_speed,
+      desktop_speed,
+    });
+  } catch {
+    return {
+      status: "error",
+      paragraphs: {
+        executive_summary: "",
+        onpage_analysis: "",
+        speed_analysis: "",
+        traffic_analysis: "",
+      },
+    };
+  }
 }
 
 export async function fetchOnPage(url: string): Promise<OnPageData | null> {

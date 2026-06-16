@@ -93,6 +93,16 @@ export interface AIResult {
   recommendations: AIRecommendation[];
 }
 
+export interface AIParagraphsResult {
+  status: "success" | "error" | "no_api_key";
+  paragraphs: {
+    executive_summary: string;
+    onpage_analysis: string;
+    speed_analysis: string;
+    traffic_analysis: string;
+  };
+}
+
 // ============================================================
 // AUDIT STATUS (mirrors backend app.py audit_status)
 // ============================================================

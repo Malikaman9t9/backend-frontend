@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import UpgradeModal from "./UpgradeModal";
 import type { OnPageData, SpeedData, TrafficData, AIResult } from "../types";
-import { fetchExport, fetchHTMLPreview } from "../services/api";
-import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw, Lock } from "lucide-react";
+import { fetchExport, fetchHTMLPreview, fetchAIParagraphs } from "../services/api";
+import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw, Lock, FileDown } from "lucide-react";
 
 interface Props {
   onpage: OnPageData | null;
@@ -37,9 +37,12 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [aiParagraphs, setAiParagraphs] = useState<Record<string, string> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (onpage && activeTab === "preview") {
@@ -51,7 +54,31 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
     if (!onpage) return;
     setPreviewLoading(true);
     try {
-      const html = await fetchHTMLPreview(
+      const [html, paragraphsRes] = await Promise.all([
+        fetchHTMLPreview(
+          url || `https://${domain}`,
+          onpage,
+          speed,
+          traffic,
+          aiResult?.recommendations || [],
+          agency,
+          client,
+          author,
+          primaryColor,
+          secondaryColor,
+          whiteLabel,
+          language,
+          aiParagraphs,
+        ),
+        fetchAIParagraphs(
+          onpage,
+          speed?.mobile?.performance ?? 0,
+          speed?.desktop?.performance ?? 0,
+        ),
+      ]);
+      const paragraphs = paragraphsRes.status === "success" ? paragraphsRes.paragraphs : null;
+      setAiParagraphs(paragraphs);
+      const htmlWithParagraphs = await fetchHTMLPreview(
         url || `https://${domain}`,
         onpage,
         speed,
@@ -64,12 +91,55 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
         secondaryColor,
         whiteLabel,
         language,
+        paragraphs,
       );
-      setPreviewUrl(html);
+      setPreviewUrl(htmlWithParagraphs || html);
     } catch (err) {
       console.error("Preview error:", err);
+      if (!previewUrl) {
+        try {
+          const fallback = await fetchHTMLPreview(
+            url || `https://${domain}`, onpage, speed, traffic,
+            aiResult?.recommendations || [], agency, client, author,
+            primaryColor, secondaryColor, whiteLabel, language,
+          );
+          setPreviewUrl(fallback);
+        } catch { /* ignore */ }
+      }
     }
     setPreviewLoading(false);
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!isPro) {
+      setShowUpgrade(true);
+      return;
+    }
+    if (!previewUrl) return;
+    setPdfLoading(true);
+    try {
+      const { default: html2pdf } = await import("html2pdf.js");
+      const container = document.createElement("div");
+      container.innerHTML = previewUrl;
+      container.style.position = "fixed";
+      container.style.left = "-9999px";
+      container.style.top = "0";
+      document.body.appendChild(container);
+
+      await html2pdf().set({
+        margin: 0,
+        filename: `${client.replace(/\s+/g, "_")}_SEO_Report.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+      }).from(container).save();
+
+      document.body.removeChild(container);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      setErrorMessage("Failed to generate PDF. Please try again.");
+    }
+    setPdfLoading(false);
   };
 
   const handleDownloadDOCX = async () => {
@@ -129,11 +199,6 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
     document.body.removeChild(a);
   };
 
-  const handlePrintPDF = () => {
-    if (!iframeRef.current?.contentWindow) return;
-    iframeRef.current.contentWindow?.print();
-  };
-
   const FreeOverlay = () => (
     <div className="export-free-overlay">
       <Lock size={32} />
@@ -184,8 +249,9 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
               <button className="preview-btn" onClick={generatePreview} disabled={previewLoading}>
                 <RotateCw size={14} /> Refresh
               </button>
-              <button className="preview-btn" onClick={handlePrintPDF} disabled={!previewUrl}>
-                <Download size={14} /> Print / PDF
+              <button className="preview-btn" onClick={handleDownloadPDF} disabled={!previewUrl || pdfLoading}>
+                {pdfLoading ? <Loader2 size={14} className="spin" /> : <FileDown size={14} />}
+                {pdfLoading ? "Generating PDF..." : "Download PDF (High Quality)"}
               </button>
             </div>
           </div>
