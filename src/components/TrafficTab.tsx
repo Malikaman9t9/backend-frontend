@@ -160,22 +160,27 @@ export default function TrafficTab({ data }: Props) {
       )}
 
       {topKeywords.length > 0 && (
-        <div className="traffic-section">
-          <h5><Search size={16} /> Top Organic Keywords</h5>
-          <table className="keywords-table">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mt-6">
+          <div className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+            <Search size={18} className="text-purple-500" />
+            <span>Top Organic Keywords</span>
+          </div>
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th>Keyword</th>
-                <th>Monthly Visits</th>
-                <th>Position</th>
+                <th className="text-sm font-medium text-slate-500 pb-3 border-b border-slate-100">Keyword</th>
+                <th className="text-sm font-medium text-slate-500 pb-3 border-b border-slate-100">Monthly Visits</th>
+                <th className="text-sm font-medium text-slate-500 pb-3 border-b border-slate-100">Position</th>
               </tr>
             </thead>
             <tbody>
               {topKeywords.slice(0, 10).map((kw, i) => (
                 <tr key={i}>
-                  <td>{kw.keyword}</td>
-                  <td>{kw.visits.toLocaleString()}</td>
-                  <td><span className="position-badge">#{kw.position}</span></td>
+                  <td className="py-3 text-sm text-slate-700 border-b border-slate-50 last:border-0">{kw.keyword}</td>
+                  <td className="py-3 text-sm text-slate-700 border-b border-slate-50 last:border-0">{kw.visits.toLocaleString()}</td>
+                  <td className="py-3 text-sm text-slate-700 border-b border-slate-50 last:border-0">
+                    <span className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full text-xs font-semibold">#{kw.position}</span>
+                  </td>
                 </tr>
               ))}
             </tbody>
