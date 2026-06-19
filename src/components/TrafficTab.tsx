@@ -1,6 +1,6 @@
 import type { TrafficData } from "../types";
 import { XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
-import { Globe, Users, Clock, Activity, Search, Share2, MousePointer, TrendingUp, MapPin } from "lucide-react";
+import { Globe, Users, Clock, Activity, Search, MousePointer, TrendingUp, MapPin, BarChart3 } from "lucide-react";
 
 interface Props {
   data: TrafficData;
@@ -145,22 +145,34 @@ export default function TrafficTab({ data }: Props) {
       </div>
 
       {topCountries.length > 0 && (
-        <div className="traffic-section">
-          <h5><MapPin size={16} /> Top Countries</h5>
-          <div className="countries-grid">
-            {topCountries.map((c, i) => (
-              <div key={i} className="country-item">
-                <span className="country-name">{c.country}</span>
-                <span className="country-visits">{c.visits.toLocaleString()}</span>
-                <span className="country-share">{c.share}</span>
-              </div>
-            ))}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
+          <div className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+            <MapPin size={18} className="text-purple-500" />
+            <span>Top Countries</span>
           </div>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Country</th>
+                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Visits</th>
+                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topCountries.slice(0, 10).map((c, i) => (
+                <tr key={i}>
+                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{c.country}</td>
+                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{c.visits.toLocaleString()}</td>
+                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{c.share}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
       {topKeywords.length > 0 && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mt-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
           <div className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
             <Search size={18} className="text-purple-500" />
             <span>Top Organic Keywords</span>
@@ -168,17 +180,17 @@ export default function TrafficTab({ data }: Props) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th className="text-sm font-medium text-slate-500 pb-3 border-b border-slate-100">Keyword</th>
-                <th className="text-sm font-medium text-slate-500 pb-3 border-b border-slate-100">Monthly Visits</th>
-                <th className="text-sm font-medium text-slate-500 pb-3 border-b border-slate-100">Position</th>
+                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Keyword</th>
+                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Monthly Visits</th>
+                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Position</th>
               </tr>
             </thead>
             <tbody>
               {topKeywords.slice(0, 10).map((kw, i) => (
                 <tr key={i}>
-                  <td className="py-3 text-sm text-slate-700 border-b border-slate-50 last:border-0">{kw.keyword}</td>
-                  <td className="py-3 text-sm text-slate-700 border-b border-slate-50 last:border-0">{kw.visits.toLocaleString()}</td>
-                  <td className="py-3 text-sm text-slate-700 border-b border-slate-50 last:border-0">
+                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{kw.keyword}</td>
+                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{kw.visits.toLocaleString()}</td>
+                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">
                     <span className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full text-xs font-semibold">#{kw.position}</span>
                   </td>
                 </tr>
@@ -188,37 +200,51 @@ export default function TrafficTab({ data }: Props) {
         </div>
       )}
 
-      <div className="traffic-insights">
-        <h5><Share2 size={16} /> Traffic Distribution</h5>
-        <div className="traffic-insights-grid">
-          <div className="insight-item">
-            <span className="insight-label">Search Traffic</span>
-            <div className="insight-bar-track">
-              <div className="insight-bar-fill" style={{ width: data.search_traffic !== "N/A" ? data.search_traffic : "0%", background: "var(--purple)" }} />
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
+        <div className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
+          <BarChart3 size={18} className="text-purple-500" />
+          <span>Traffic Distribution</span>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-slate-600">Search Traffic</span>
+              <span className="font-medium text-slate-800">{data.search_traffic}</span>
             </div>
-            <span className="insight-value">{data.search_traffic}</span>
+            <div className="w-full bg-slate-100 rounded-full h-2.5">
+              <div className="h-2.5 rounded-full" style={{ width: data.search_traffic !== "N/A" ? data.search_traffic : "0%", background: "var(--purple)" }} />
+            </div>
           </div>
-          <div className="insight-item">
-            <span className="insight-label">Direct Traffic</span>
-            <div className="insight-bar-track">
-              <div className="insight-bar-fill" style={{ width: data.direct_traffic !== "N/A" ? data.direct_traffic : "0%", background: "var(--pink)" }} />
+          <div>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-slate-600">Direct Traffic</span>
+              <span className="font-medium text-slate-800">{data.direct_traffic}</span>
             </div>
-            <span className="insight-value">{data.direct_traffic}</span>
+            <div className="w-full bg-slate-100 rounded-full h-2.5">
+              <div className="h-2.5 rounded-full" style={{ width: data.direct_traffic !== "N/A" ? data.direct_traffic : "0%", background: "var(--pink)" }} />
+            </div>
           </div>
-          <div className="insight-item">
-            <span className="insight-label">Social Traffic</span>
-            <div className="insight-bar-track">
-              <div className="insight-bar-fill" style={{ width: data.social_traffic !== "N/A" ? data.social_traffic : "0%", background: "var(--amber)" }} />
+          <div>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-slate-600">Social Traffic</span>
+              <span className="font-medium text-slate-800">{data.social_traffic}</span>
             </div>
-            <span className="insight-value">{data.social_traffic}</span>
+            <div className="w-full bg-slate-100 rounded-full h-2.5">
+              <div className="h-2.5 rounded-full" style={{ width: data.social_traffic !== "N/A" ? data.social_traffic : "0%", background: "var(--amber)" }} />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="traffic-meta">
-        <span>Social: {data.social_traffic}</span>
-        <span>Global Rank: {data.global_rank}</span>
-        <span>Status: {data.status}</span>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <Globe size={14} className="text-slate-400" />
+          <span>Global Rank: <strong className="text-slate-700">{data.global_rank}</strong></span>
+          <span className="text-slate-200 mx-2">|</span>
+          <span>Status: <strong className="text-slate-700">{data.status}</strong></span>
+          <span className="text-slate-200 mx-2">|</span>
+          <span>Social: <strong className="text-slate-700">{data.social_traffic}</strong></span>
+        </div>
       </div>
     </div>
   );
