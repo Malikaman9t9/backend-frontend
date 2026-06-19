@@ -4,6 +4,10 @@ import type {
   TrafficData,
   AIResult,
   AIParagraphsResult,
+  MozMetrics,
+  FastAuditCheck,
+  KeywordInsight,
+  SemrushVolume,
 } from "../types";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
@@ -190,5 +194,44 @@ export async function fetchBulkExport(reports: {
     return await res.blob();
   } catch {
     return null;
+  }
+}
+
+export async function fetchMozMetrics(domain: string): Promise<MozMetrics> {
+  try {
+    return await fetchJSON<MozMetrics>(`${API_BASE}/v2/moz-metrics`, { domains: [domain] });
+  } catch {
+    return { status: "error", error: "Failed to fetch Moz metrics" };
+  }
+}
+
+export async function fetchFastAudit(url: string): Promise<{
+  ssl: FastAuditCheck;
+  robots: FastAuditCheck;
+  sitemap: FastAuditCheck;
+  webShield: FastAuditCheck;
+}> {
+  const [ssl, robots, sitemap, webShield] = await Promise.all([
+    fetchJSON<FastAuditCheck>(`${API_BASE}/v2/fast/ssl-verify`, { url }).catch(() => ({ status: "error" as const, error: "SSL check failed" })),
+    fetchJSON<FastAuditCheck>(`${API_BASE}/v2/fast/robots-txt`, { url }).catch(() => ({ status: "error" as const, error: "Robots.txt check failed" })),
+    fetchJSON<FastAuditCheck>(`${API_BASE}/v2/fast/sitemap-detect`, { url }).catch(() => ({ status: "error" as const, error: "Sitemap detection failed" })),
+    fetchJSON<FastAuditCheck>(`${API_BASE}/v2/fast/web-shield`, { url }).catch(() => ({ status: "error" as const, error: "Web shield scan failed" })),
+  ]);
+  return { ssl, robots, sitemap, webShield };
+}
+
+export async function fetchKeywordResearch(keyword: string, countryCode = "us"): Promise<KeywordInsight> {
+  try {
+    return await fetchJSON<KeywordInsight>(`${API_BASE}/v2/keyword-research`, { keyword, country_code: countryCode });
+  } catch {
+    return { status: "error", error: "Keyword research failed" };
+  }
+}
+
+export async function fetchSemrushVolume(keyword: string, database = "us"): Promise<SemrushVolume> {
+  try {
+    return await fetchJSON<SemrushVolume>(`${API_BASE}/v2/semrush/global-volume`, { keyword, database });
+  } catch {
+    return { status: "error", error: "Semrush volume fetch failed" };
   }
 }

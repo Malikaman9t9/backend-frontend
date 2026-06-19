@@ -168,3 +168,24 @@ export interface BulkResult {
   ai_recommendations: AIRecommendation[];
   ai_status: string;
 }
+
+export interface RapidAPIBase {
+  status: "ok" | "error";
+  error?: string;
+}
+
+export interface MozMetrics extends RapidAPIBase {
+  data?: Record<string, { da: number; pa: number; [key: string]: unknown }>;
+}
+
+export interface FastAuditCheck extends RapidAPIBase {
+  data?: { status?: string; ssl_valid?: boolean; has_robots?: boolean; has_sitemap?: boolean; xss_vulnerable?: boolean; [key: string]: unknown };
+}
+
+export interface KeywordInsight extends RapidAPIBase {
+  data?: { related_keywords?: string[]; questions?: string[]; volume?: number; difficulty?: number; cpc?: number; [key: string]: unknown };
+}
+
+export interface SemrushVolume extends RapidAPIBase {
+  data?: { volume?: number; cpc?: number; competition?: string; [key: string]: unknown };
+}

@@ -6,12 +6,13 @@ import SpeedVitals from "./SpeedVitals";
 import TrafficTab from "./TrafficTab";
 import AiStrategy from "./AiStrategy";
 import ExportTab from "./ExportTab";
+import PremiumTools from "./PremiumTools";
 import UpgradeModal from "./UpgradeModal";
 import { useAuth } from "../context/AuthContext";
 import { fetchOnPage, fetchSpeed, fetchTraffic, fetchAIRecommendations } from "../services/api";
 import { calculateScores } from "../services/audit";
 import type { OnPageData, SpeedData, TrafficData, AIResult } from "../types";
-import { Globe, Zap, TrendingUp, Cpu, FileText } from "lucide-react";
+import { Globe, Zap, TrendingUp, Cpu, FileText, Layers } from "lucide-react";
 
 const DAILY_LIMIT_FREE = 3;
 const DAILY_LIMIT_KEY = "ngwl_audit_count";
@@ -56,7 +57,7 @@ function validateURL(input: string): { target: string; clean: string; error: str
   }
 }
 
-type TabId = "onpage" | "speed" | "traffic" | "ai" | "export";
+type TabId = "onpage" | "speed" | "traffic" | "ai" | "advanced" | "export";
 
 export default function SiteAuditor() {
   const { isPro } = useAuth();
@@ -139,6 +140,7 @@ export default function SiteAuditor() {
     { id: "speed", label: "Speed Vitals", icon: <Zap size={16} /> },
     { id: "traffic", label: "Traffic", icon: <TrendingUp size={16} />, show: isPro && !!traffic },
     { id: "ai", label: "AI Strategy", icon: <Cpu size={16} /> },
+    { id: "advanced", label: "Advanced", icon: <Layers size={16} /> },
     { id: "export", label: "Export", icon: <FileText size={16} /> },
   ];
 
@@ -196,6 +198,7 @@ export default function SiteAuditor() {
               {activeTab === "speed" && speed && <SpeedVitals data={speed} />}
               {activeTab === "traffic" && traffic && <TrafficTab data={traffic} />}
               {activeTab === "ai" && <AiStrategy recommendations={aiResult.recommendations} status={aiResult.status} />}
+              {activeTab === "advanced" && <PremiumTools url={_targetUrl || `https://${domain}`} domain={domain} />}
               {activeTab === "export" && (
                 <ExportTab onpage={onpage} speed={speed} traffic={traffic} aiResult={aiResult} domain={domain} />
               )}
