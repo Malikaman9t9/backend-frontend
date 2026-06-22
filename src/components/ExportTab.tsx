@@ -118,14 +118,27 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
     setPdfLoading(true);
     try {
       const { default: html2pdf } = await import("html2pdf.js");
-      const opt: Record<string, unknown> = {
+      const container = document.createElement("div");
+      container.innerHTML = previewUrl;
+      container.style.position = "absolute";
+      container.style.top = "0";
+      container.style.left = "0";
+      container.style.width = "1024px";
+      container.style.zIndex = "-1000";
+      document.body.appendChild(container);
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const opt: any = {
         margin: [0.3, 0.3],
         filename: `${client.replace(/\s+/g, "_")}_SEO_Report.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
       };
-      await html2pdf().from(previewUrl).set(opt).save();
+      await html2pdf().set(opt).from(container).save();
+
+      document.body.removeChild(container);
     } catch (err) {
       console.error("PDF generation error:", err);
       setErrorMessage("Failed to generate PDF. Please try again.");
