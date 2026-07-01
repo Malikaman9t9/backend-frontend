@@ -4,7 +4,7 @@ import SiteAuditor from "./SiteAuditor";
 import BulkAnalysis from "./BulkAnalysis";
 import DemoBanner from "./DemoBanner";
 import UpgradeModal from "./UpgradeModal";
-import { Search, FileSpreadsheet, LogOut, Bolt, Crown, User, Menu, X, Lock, ArrowLeft } from "lucide-react";
+import { Search, FileSpreadsheet, LogOut, Crown, User, Menu, X, Lock, ArrowLeft } from "lucide-react";
 
 export default function Layout() {
   const { user, isPro, planLabel, signOut, loading } = useAuth();
@@ -59,8 +59,8 @@ export default function Layout() {
         )}
 
         {!isPro && (
-          <a href="https://nexgenweblab.com/upgrade" className="upgrade-banner">
-            <Bolt size={14} />
+          <a href="/upgrade" className="upgrade-banner">
+            <Crown size={14} />
             Upgrade to Pro
           </a>
         )}

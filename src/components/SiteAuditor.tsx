@@ -196,7 +196,7 @@ export default function SiteAuditor() {
             <div className="tab-content">
               {activeTab === "onpage" && onpage && <OnPageResults data={onpage} />}
               {activeTab === "speed" && speed && <SpeedVitals data={speed} />}
-              {activeTab === "traffic" && traffic && <TrafficTab data={traffic} />}
+              {activeTab === "traffic" && traffic && <TrafficTab data={traffic as any} />}
               {activeTab === "ai" && <AiStrategy recommendations={aiResult.recommendations} status={aiResult.status} />}
               {activeTab === "advanced" && <PremiumTools url={_targetUrl || `https://${domain}`} domain={domain} />}
               {activeTab === "export" && (

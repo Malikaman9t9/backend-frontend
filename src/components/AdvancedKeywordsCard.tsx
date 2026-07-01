@@ -82,7 +82,11 @@ export default function AdvancedKeywordsCard({ keywordResearch, semrushVolume, l
           </div>
         )}
         {volume === undefined && cpc === undefined && difficulty === undefined && (
-          <div className="col-span-3 text-sm text-slate-400 text-center py-2">No metrics available</div>
+          <div className="col-span-3 text-center py-8">
+            <Search size={32} className="mx-auto text-slate-200 mb-3" />
+            <p className="text-sm text-slate-400">Run an audit first to see keyword insights</p>
+            <p className="text-xs text-slate-300 mt-1">Enter a keyword above and click Analyze to get started</p>
+          </div>
         )}
       </div>
 

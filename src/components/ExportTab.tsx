@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import UpgradeModal from "./UpgradeModal";
 import type { OnPageData, SpeedData, TrafficData, AIResult } from "../types";
-import { fetchExport, fetchHTMLPreview, fetchAIParagraphs } from "../services/api";
+import { fetchHTMLPreview, fetchAIParagraphs } from "../services/api";
 import { Download, Eye, Settings, FileText, FileCode, Loader2, RotateCw, Lock, FileDown } from "lucide-react";
 
 interface Props {
@@ -114,20 +114,51 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
       setShowUpgrade(true);
       return;
     }
-    if (!previewUrl) return;
+    if (!onpage) {
+      setErrorMessage("Please run an On-Page SEO audit first to download the report.");
+      return;
+    }
     setPdfLoading(true);
     try {
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiBase}/export/html/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: url || `https://${domain}`,
+          onpage_data: onpage,
+          speed_data: speed || {},
+          traffic_data: traffic || {},
+          ai_suggestions: aiResult?.recommendations || [],
+          agency_name: agency || 'NexGenWebLab',
+          client_name: client || 'Client',
+          author_name: author || 'SEO Team',
+          primary_color: primaryColor,
+          secondary_color: secondaryColor,
+          white_label: whiteLabel,
+          language: language,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Preview failed (${response.status}): ${errText}`);
+      }
+
+      const html = await response.text();
+      if (!html || html.length < 100) {
+        throw new Error('Received empty HTML from server');
+      }
+
       const { default: html2pdf } = await import("html2pdf.js");
       const container = document.createElement("div");
-      container.innerHTML = previewUrl;
+      container.innerHTML = html;
       container.style.position = "absolute";
       container.style.top = "0";
       container.style.left = "0";
       container.style.width = "1024px";
       container.style.zIndex = "-1000";
       document.body.appendChild(container);
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const opt: any = {
         margin: [0.3, 0.3],
@@ -137,11 +168,11 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
         jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
       };
       await html2pdf().set(opt).from(container).save();
-
       document.body.removeChild(container);
     } catch (err) {
       console.error("PDF generation error:", err);
-      setErrorMessage("Failed to generate PDF. Please try again.");
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setErrorMessage(`Failed to generate PDF: ${msg}`);
     }
     setPdfLoading(false);
   };
@@ -157,21 +188,32 @@ export default function ExportTab({ onpage, speed, traffic, aiResult, domain, ur
     }
     setLoading(true);
     try {
-      const blob = await fetchExport(
-        url || `https://${domain}`,
-        onpage,
-        speed || { mobile: { performance: 0, accessibility: 0, "best-practices": 0, seo: 0, metrics: { fcp: { value: "N/A", score: 0 }, lcp: { value: "N/A", score: 0 }, tbt: { value: "N/A", score: 0 }, cls: { value: "N/A", score: 0 }, si: { value: "N/A", score: 0 } } }, desktop: { performance: 0, accessibility: 0, "best-practices": 0, seo: 0, metrics: { fcp: { value: "N/A", score: 0 }, lcp: { value: "N/A", score: 0 }, tbt: { value: "N/A", score: 0 }, cls: { value: "N/A", score: 0 }, si: { value: "N/A", score: 0 } } } } as SpeedData,
-        traffic,
-        aiResult?.recommendations.map(r => ({ ...r })) || [],
-        agency,
-        client,
-        author,
-      );
-      if (!blob) {
-        setErrorMessage("Failed to generate report. Please try again.");
-        setLoading(false);
-        return;
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiBase}/export`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: url || `https://${domain}`,
+          onpage_data: onpage,
+          speed_data: speed || {},
+          traffic_data: traffic || {},
+          ai_suggestions: aiResult?.recommendations || [],
+          agency_name: agency || 'NexGenWebLab',
+          client_name: client || 'Client',
+          author_name: author || 'SEO Team',
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Export failed (${response.status}): ${errText}`);
       }
+
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error('Received empty file from server');
+      }
+
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = downloadUrl;

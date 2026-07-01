@@ -1,197 +1,259 @@
-import type { TrafficData } from "../types";
-import { XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
-import { Globe, Users, Clock, Activity, Search, MousePointer, TrendingUp, MapPin, BarChart3 } from "lucide-react";
+import React from 'react'
+import { Globe, TrendingUp, Search, BarChart3 } from 'lucide-react'
 
-interface Props {
-  data: TrafficData;
+interface TrafficData {
+  monthly_visits?: number
+  bounce_rate?: number
+  pages_per_visit?: number
+  avg_duration?: number
+  global_rank?: number
+  top_countries?: Array<{country: string, visits: number, share: number}>
+  top_keywords?: Array<{keyword: string, visits: number, position: number}>
+  traffic_sources?: {
+    search?: number
+    direct?: number
+    social?: number
+    referral?: number
+    mail?: number
+    paid?: number
+  }
 }
 
-function MetricCard({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub?: string }) {
-  return (
-    <div className="traffic-metric-card">
-      <div className="traffic-metric-icon">{icon}</div>
-      <div className="traffic-metric-body">
-        <span className="traffic-metric-label">{label}</span>
-        <span className="traffic-metric-value">{value}</span>
-        {sub && <span className="traffic-metric-sub">{sub}</span>}
-      </div>
+interface TrafficTabProps {
+  data: TrafficData | null
+  isPro?: boolean
+}
+
+const TrafficTab: React.FC<TrafficTabProps> = ({ data, isPro: _isPro }) => {
+
+  if (!data) return (
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '60px 20px', textAlign: 'center'
+    }}>
+      <BarChart3 size={48} color="#E2E8F0" strokeWidth={1} />
+      <p style={{color: '#94A3B8', marginTop: '16px', fontSize: '15px'}}>
+        No traffic data available for this domain.
+      </p>
+      <p style={{color: '#CBD5E1', fontSize: '13px', marginTop: '8px'}}>
+        Traffic data is sourced from SimilarWeb via RapidAPI.
+      </p>
     </div>
-  );
-}
+  )
 
-const SOURCE_COLORS = ["var(--purple)", "var(--pink)", "var(--amber)", "var(--green)", "var(--blue)"];
+  const cardStyle: React.CSSProperties = {
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: '12px',
+    padding: '20px 24px',
+    marginBottom: '16px'
+  }
 
-export default function TrafficTab({ data }: Props) {
-  const monthlyList = data.monthly_visits_list || [];
-  const trendData = monthlyList.length > 0 
-    ? monthlyList 
-    : [];
-    
-  const sourceData = [
-    { name: "Organic Search", value: data.search_traffic !== "N/A" ? parseFloat(data.search_traffic.replace('%', '')) : 0 },
-    { name: "Direct", value: data.direct_traffic !== "N/A" ? parseFloat(data.direct_traffic.replace('%', '')) : 0 },
-    { name: "Social", value: data.social_traffic !== "N/A" ? parseFloat(data.social_traffic.replace('%', '')) : 0 },
-    { name: "Referral", value: data.referral_traffic !== "N/A" ? parseFloat(data.referral_traffic.replace('%', '')) : 0 },
-  ];
+  const sectionHeading: React.CSSProperties = {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#0F172A',
+    marginBottom: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  }
 
-  const totalSourceValue = sourceData.reduce((sum, s) => sum + s.value, 0);
-  const displaySourceData = totalSourceValue > 0 
-    ? sourceData.filter(s => s.value > 0)
-    : sourceData.map(s => ({ ...s, value: 25 }));
+  const statCard: React.CSSProperties = {
+    background: '#F8FAFC',
+    border: '1px solid #F1F5F9',
+    borderRadius: '10px',
+    padding: '16px',
+    textAlign: 'center'
+  }
 
-  const topCountries = data.top_countries || [];
-  const topKeywords = data.top_keywords || [];
+  const statValue: React.CSSProperties = {
+    fontSize: '22px',
+    fontWeight: '700',
+    color: '#4F46E5',
+    display: 'block'
+  }
+
+  const statLabel: React.CSSProperties = {
+    fontSize: '11px',
+    color: '#94A3B8',
+    marginTop: '4px',
+    display: 'block',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em'
+  }
+
+  const tableStyle: React.CSSProperties = {
+    width: '100%',
+    borderCollapse: 'collapse' as const
+  }
+
+  const thStyle: React.CSSProperties = {
+    textAlign: 'left' as const,
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#94A3B8',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    padding: '8px 12px',
+    borderBottom: '1px solid #F1F5F9'
+  }
+
+  const tdStyle: React.CSSProperties = {
+    padding: '10px 12px',
+    fontSize: '13px',
+    color: '#374151',
+    borderBottom: '1px solid #F8FAFC'
+  }
+
+  const formatNumber = (n?: number) => {
+    if (!n) return '—'
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M'
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K'
+    return n.toLocaleString()
+  }
+
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return '—'
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}m ${s}s`
+  }
 
   return (
-    <div className="traffic-tab">
-      <div className="traffic-grid">
-        <MetricCard
-          icon={<Globe size={20} />}
-          label="Global Rank"
-          value={data.global_rank}
-        />
-        <MetricCard
-          icon={<Users size={20} />}
-          label="Monthly Visits"
-          value={data.monthly_visits}
-        />
-        <MetricCard
-          icon={<Activity size={20} />}
-          label="Bounce Rate"
-          value={data.bounce_rate}
-        />
-        <MetricCard
-          icon={<MousePointer size={20} />}
-          label="Pages / Visit"
-          value={data.pages_per_visit}
-        />
-        <MetricCard
-          icon={<Clock size={20} />}
-          label="Avg. Duration"
-          value={data.avg_duration}
-        />
-        <MetricCard
-          icon={<Search size={20} />}
-          label="Organic Traffic"
-          value={data.search_traffic}
-        />
-      </div>
+    <div style={{padding: '8px 0'}}>
 
-      <div className="traffic-charts-row">
-        <div className="traffic-chart-card">
-          <div className="traffic-chart-header">
-            <h5><Activity size={16} /> Monthly Visit Trend</h5>
+      {/* Overview Stats */}
+      <div style={cardStyle}>
+        <div style={sectionHeading}>
+          <BarChart3 size={16} color="#4F46E5" />
+          Traffic Overview
+          {data.global_rank && (
+            <span style={{
+              marginLeft: 'auto', fontSize: '12px',
+              background: '#EEF2FF', color: '#4F46E5',
+              padding: '3px 10px', borderRadius: '20px',
+              fontWeight: '500'
+            }}>
+              Global Rank #{data.global_rank.toLocaleString()}
+            </span>
+          )}
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: '12px'
+        }}>
+          <div style={statCard}>
+            <span style={statValue}>{formatNumber(data.monthly_visits)}</span>
+            <span style={statLabel}>Monthly Visits</span>
           </div>
-          <div className="traffic-chart-body">
-            {trendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--slate-100)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--slate-400)" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--slate-400)" }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
-                  <Tooltip formatter={(v) => [typeof v === 'number' ? v.toLocaleString() : v, 'Visits']} />
-                  <Line type="monotone" dataKey="visits" stroke="var(--purple)" strokeWidth={3} dot={{ fill: "var(--purple)", r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="traffic-empty">
-                <TrendingUp size={32} />
-                <p>Monthly trend data unavailable</p>
-              </div>
-            )}
+          <div style={statCard}>
+            <span style={statValue}>
+              {data.bounce_rate ? (data.bounce_rate * 100).toFixed(1) + '%' : '—'}
+            </span>
+            <span style={statLabel}>Bounce Rate</span>
+          </div>
+          <div style={statCard}>
+            <span style={statValue}>
+              {data.pages_per_visit ? data.pages_per_visit.toFixed(1) : '—'}
+            </span>
+            <span style={statLabel}>Pages/Visit</span>
+          </div>
+          <div style={statCard}>
+            <span style={statValue}>{formatDuration(data.avg_duration)}</span>
+            <span style={statLabel}>Avg Duration</span>
           </div>
         </div>
+      </div>
 
-        <div className="traffic-chart-card">
-          <div className="traffic-chart-header">
-            <h5><Search size={16} /> Traffic Sources</h5>
+      {/* Traffic Sources */}
+      {data.traffic_sources && (
+        <div style={cardStyle}>
+          <div style={sectionHeading}>
+            <TrendingUp size={16} color="#4F46E5" />
+            Traffic Distribution
           </div>
-          <div className="traffic-chart-body">
-            {displaySourceData.length > 0 ? (
-              <>
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={displaySourceData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={80}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {displaySourceData.map((_, i) => (
-                        <Cell key={i} fill={SOURCE_COLORS[i % SOURCE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v) => (typeof v === "number" ? `${v.toFixed(1)}%` : v)} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="traffic-legend">
-                  {displaySourceData.map((s, i) => (
-                    <div key={s.name} className="traffic-legend-item">
-                      <span className="legend-dot" style={{ background: SOURCE_COLORS[i] }} />
-                      <span className="legend-label">{s.name}</span>
-                      <span className="legend-value">{s.value.toFixed(1)}%</span>
-                    </div>
-                  ))}
+          <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+            {Object.entries(data.traffic_sources)
+              .filter(([_, v]) => v && v > 0)
+              .sort(([_,a], [__,b]) => (b||0) - (a||0))
+              .map(([source, value]) => (
+              <div key={source}>
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  marginBottom: '5px'
+                }}>
+                  <span style={{fontSize: '13px', color: '#374151', textTransform: 'capitalize'}}>
+                    {source} Traffic
+                  </span>
+                  <span style={{fontSize: '13px', fontWeight: '600', color: '#0F172A'}}>
+                    {((value||0) * 100).toFixed(1)}%
+                  </span>
                 </div>
-              </>
-            ) : (
-              <div className="traffic-empty">No source data available</div>
-            )}
+                <div style={{
+                  height: '6px', background: '#F1F5F9',
+                  borderRadius: '3px', overflow: 'hidden'
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${((value||0) * 100).toFixed(1)}%`,
+                    background: 'linear-gradient(90deg, #4F46E5, #7C3AED)',
+                    borderRadius: '3px',
+                    transition: 'width 0.6s ease'
+                  }} />
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
-
-      {topCountries.length > 0 && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
-          <div className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <MapPin size={18} className="text-purple-500" />
-            <span>Top Countries</span>
-          </div>
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr>
-                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Country</th>
-                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Visits</th>
-                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Share</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topCountries.slice(0, 10).map((c, i) => (
-                <tr key={i}>
-                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{c.country}</td>
-                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{c.visits.toLocaleString()}</td>
-                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{c.share}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       )}
 
-      {topKeywords.length > 0 && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
-          <div className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-            <Search size={18} className="text-purple-500" />
-            <span>Top Organic Keywords</span>
+      {/* Top Countries */}
+      {data.top_countries && data.top_countries.length > 0 && (
+        <div style={cardStyle}>
+          <div style={sectionHeading}>
+            <Globe size={16} color="#4F46E5" />
+            Top Countries
           </div>
-          <table className="w-full text-left border-collapse">
+          <table style={tableStyle}>
             <thead>
               <tr>
-                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Keyword</th>
-                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Monthly Visits</th>
-                <th className="text-sm font-semibold text-slate-500 pb-3 border-b border-slate-100">Position</th>
+                <th style={thStyle}>Country</th>
+                <th style={{...thStyle, textAlign: 'right'}}>Visits</th>
+                <th style={{...thStyle, textAlign: 'right'}}>Share</th>
               </tr>
             </thead>
             <tbody>
-              {topKeywords.slice(0, 10).map((kw, i) => (
-                <tr key={i}>
-                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{kw.keyword}</td>
-                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">{kw.visits.toLocaleString()}</td>
-                  <td className="py-3 text-sm text-slate-800 border-b border-slate-50">
-                    <span className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full text-xs font-semibold">#{kw.position}</span>
+              {data.top_countries.slice(0, 8).map((c, i) => (
+                <tr key={i} style={{background: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA'}}>
+                  <td style={tdStyle}>
+                    <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                      <span style={{
+                        width: '20px', height: '20px',
+                        background: '#EEF2FF', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', fontSize: '10px',
+                        color: '#4F46E5', fontWeight: '700',
+                        flexShrink: 0
+                      }}>{i+1}</span>
+                      {c.country}
+                    </div>
+                  </td>
+                  <td style={{...tdStyle, textAlign: 'right', fontWeight: '500'}}>
+                    {formatNumber(c.visits)}
+                  </td>
+                  <td style={{...tdStyle, textAlign: 'right'}}>
+                    <span style={{
+                      background: '#EEF2FF', color: '#4F46E5',
+                      padding: '2px 8px', borderRadius: '10px',
+                      fontSize: '12px', fontWeight: '500'
+                    }}>
+                      {typeof c.share === 'number'
+                        ? (c.share < 1 ? (c.share * 100).toFixed(1) : c.share.toFixed(1)) + '%'
+                        : c.share}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -200,52 +262,60 @@ export default function TrafficTab({ data }: Props) {
         </div>
       )}
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
-        <div className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-4">
-          <BarChart3 size={18} className="text-purple-500" />
-          <span>Traffic Distribution</span>
+      {/* Top Keywords */}
+      {data.top_keywords && data.top_keywords.length > 0 && (
+        <div style={cardStyle}>
+          <div style={sectionHeading}>
+            <Search size={16} color="#4F46E5" />
+            Top Organic Keywords
+          </div>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>#</th>
+                <th style={thStyle}>Keyword</th>
+                <th style={{...thStyle, textAlign: 'right'}}>Monthly Visits</th>
+                <th style={{...thStyle, textAlign: 'center'}}>Position</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.top_keywords.slice(0, 10).map((kw, i) => {
+                const keyword = kw.keyword || ''
+                const visits = kw.visits || 0
+                const position = kw.position || 0
+                return (
+                  <tr key={i} style={{background: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA'}}>
+                    <td style={{...tdStyle, color: '#94A3B8', width: '30px'}}>
+                      {i+1}
+                    </td>
+                    <td style={{...tdStyle, fontWeight: '500', color: '#0F172A'}}>
+                      {keyword}
+                    </td>
+                    <td style={{...tdStyle, textAlign: 'right'}}>
+                      {formatNumber(visits)}
+                    </td>
+                    <td style={{...tdStyle, textAlign: 'center'}}>
+                      <span style={{
+                        background: position === 1
+                          ? '#F0FDF4' : '#F8FAFC',
+                        color: position === 1
+                          ? '#16A34A' : '#64748B',
+                        padding: '2px 8px', borderRadius: '10px',
+                        fontSize: '12px', fontWeight: '600'
+                      }}>
+                        #{position}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-1.5">
-              <span className="text-slate-600">Search Traffic</span>
-              <span className="font-medium text-slate-800">{data.search_traffic}</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2.5">
-              <div className="h-2.5 rounded-full" style={{ width: data.search_traffic !== "N/A" ? data.search_traffic : "0%", background: "var(--purple)" }} />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1.5">
-              <span className="text-slate-600">Direct Traffic</span>
-              <span className="font-medium text-slate-800">{data.direct_traffic}</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2.5">
-              <div className="h-2.5 rounded-full" style={{ width: data.direct_traffic !== "N/A" ? data.direct_traffic : "0%", background: "var(--pink)" }} />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1.5">
-              <span className="text-slate-600">Social Traffic</span>
-              <span className="font-medium text-slate-800">{data.social_traffic}</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2.5">
-              <div className="h-2.5 rounded-full" style={{ width: data.social_traffic !== "N/A" ? data.social_traffic : "0%", background: "var(--amber)" }} />
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <Globe size={14} className="text-slate-400" />
-          <span>Global Rank: <strong className="text-slate-700">{data.global_rank}</strong></span>
-          <span className="text-slate-200 mx-2">|</span>
-          <span>Status: <strong className="text-slate-700">{data.status}</strong></span>
-          <span className="text-slate-200 mx-2">|</span>
-          <span>Social: <strong className="text-slate-700">{data.social_traffic}</strong></span>
-        </div>
-      </div>
     </div>
-  );
+  )
 }
+
+export default TrafficTab
